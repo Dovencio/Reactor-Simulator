@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+#Reproducable files
+.vs
+x64
+Debug
+Release
