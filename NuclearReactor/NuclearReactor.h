@@ -16,6 +16,9 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/mpl/modulus.hpp>
+#include <boost/math/special_functions/round.hpp>
+#include <fstream>
+#include <direct.h>
 #include "Element.h"
 
 using namespace std;
@@ -101,7 +104,8 @@ Element Elements[] = {
 	Element::Element(82, 129, "PB209", 15, toSeconds(3.2528, "h"), false),//14
 	Element::Element(82, 128, "PB208", 15, 0, true),//15
 	Element::Element(92, 143, "U235", 3, pow(10, 9), false)//16
-}
+	//Element::Element(92, 142, "U234", 18, ),//17
+};
 
 const short EleLeng = *(&Elements + 1) - Elements;
 
@@ -116,7 +120,7 @@ void displayElementDecayChances(Element Elements[], short len)
 
 void collectElementN(Element Elements[], short len)
 {
-	cout << "Grams [1], Mols[2], or Atoms [3]: ";
+	cout << "Grams [1], Mols[2], Atoms [3], or Save[4]: ";
 	string choice;
 	cin >> choice;
 	switch (stoi(choice))
@@ -148,6 +152,29 @@ void collectElementN(Element Elements[], short len)
 			Elements[i].n = LINT(d);
 		}
 		break;
+	case 4:
+	{
+		cout << "Name of save?: ";
+		string ans;
+		cin >> ans;
+		fstream foo("saves/" + ans + ".samp");
+		string out;
+		foo >> out;
+		particles = LINT(out);
+		cout << "Particles: " << particles << endl;
+		foo >> out;
+		tries = stoull(out);
+		cout << "Seconds: " << tries << endl;
+		for (short i = 0; i < EleLeng; i++)
+		{
+			foo >> out;
+			Elements[i].n = LINT(out);
+			cout << Elements[i].elementName << ": " << Elements[i].n << endl;
+		}
+		cout << "Finished loading." << endl;
+		foo.close();
+		break;
+	}
 	default:
 		for (short i = 0; i < len; i++)
 		{
@@ -170,6 +197,22 @@ LINT getMostAtoms(bool incS)
 			if (r < Elements[i].n)
 			{
 				r = Elements[i].n;
+			}
+		}
+	}
+	return r;
+}
+
+LINT getAllAtoms(bool incS)
+{
+	LINT r = 0;
+	for (short i = 0; i < *(&Elements + 1) - Elements; i++)
+	{
+		if (Elements[i].decayChance > 0 || incS)
+		{
+			if (r < Elements[i].n)
+			{
+				r += Elements[i].n;
 			}
 		}
 	}
@@ -257,6 +300,7 @@ void outputData()
 {
 	while (!finished)
 	{
+		LINT all = getAllAtoms(true);
 		GETTP(stop)
 		GETUS(t, stop, start)
 		LINT tc = t.count();
@@ -289,7 +333,12 @@ void outputData()
 			);
 			for (short i = 0; i < EleLeng; i++)
 			{
-				dataChange(24, longboi, i + 5, Elements[i].n);
+				LINT n = Elements[i].n;
+				dataChange(24, longboi, i + 5, 
+					n.convert_to<string>() + " " + 
+					(boost::math::round(BF50(10000)*(n.convert_to<BF50>()/all.convert_to<BF50>())) / BF50(100)).convert_to<string>() +
+					"%"
+				);
 			}
 
 		}

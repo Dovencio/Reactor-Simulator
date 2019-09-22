@@ -7,9 +7,10 @@ using namespace std;
 
 int main()
 {
+	_mkdir("saves");
 	srand(clock());
 	system("title Decay simulator");
-	displayElementDecayChances(Elements, EleLeng);
+	//displayElementDecayChances(Elements, EleLeng);
 	collectElementN(Elements, EleLeng);
 	cout << "Update screen every ms?:";
 	cin >> SUpdate;
@@ -18,7 +19,8 @@ int main()
 	LINT NumOfTests = 0;
 	start = NOW;
 	thread d(outputData);
-	while (getMostAtoms(false) > LINT(0))
+	bool Locked = true;
+	while (getMostAtoms(false) > LINT(0) && Locked)
 	{
 		for (short i = 0; i < *(&Elements + 1) - Elements; i++)
 		{
@@ -37,10 +39,29 @@ int main()
 				}
 			}
 		}
-
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+			Locked = false;
+		}
 	}
 	finished = true;
 	d.join();
+	cout << "Would you like to make a save?[y/n]: ";
+	string ans;
+	cin >> ans;
+	if (ans == "y")
+	{
+		cout << "Name?: ";
+		cin >> ans;
+		fstream save("saves/" + ans + ".samp", fstream::out);
+		save << particles << endl;
+		save << tries << endl;
+		for (short i = 0; i < EleLeng; i++)
+		{
+			save << Elements[i].n << endl;
+		}
+		save.close();
+	}
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
