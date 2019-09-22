@@ -9,34 +9,25 @@ int main()
 {
 	srand(clock());
 	system("title Decay simulator");
-	short longboi = 21;
-	const LINT mol("6022140761000000000000000");
-	unsigned long long tries = 0;
-	LINT NumOfTests = 0;
-	cout << "How many grams of U238?: ";
-	string GU238;
-	cin >> GU238;
-	cout << "How many grams of U235?: ";
-	string GU235;
-	cin >> GU235;
+	displayElementDecayChances(Elements, EleLeng);
+	collectElementN(Elements, EleLeng);
 	cout << "Update screen every ms?:";
-	string SUpdate;
 	cin >> SUpdate;
-	Elements[0].n = (BF50(GU238) / BF50(238) * BF50(mol)).convert_to<LINT>();
-	Elements[16].n = (BF50(GU235) / BF50(235) * BF50(mol)).convert_to<LINT>();
 	system("CLS");
-	LINT particles = 0;
-	intOutputData(Elements, *(&Elements + 1) - Elements);
-	while (Elements[0].n > 0)
+	intOutputData(Elements, EleLeng);
+	LINT NumOfTests = 0;
+	start = NOW;
+	thread d(outputData);
+	while (getMostAtoms(false) > LINT(0))
 	{
 		for (short i = 0; i < *(&Elements + 1) - Elements; i++)
 		{
 			Elements[i].ns = 0;
 		}
-		GETTP(start)
+		start = NOW;
 		tries++;
-		LINT n = getMostAtoms();
-		for (LINT i = 0; i < n; i++)
+		in = getMostAtoms(false);
+		for (ni = 0; ni < in; ni++)
 		{
 			for (short i = 0; i < *(&Elements + 1) - Elements; i++)
 			{
@@ -45,19 +36,11 @@ int main()
 					particles++;
 				}
 			}
-			GETTP(stop)
-			GETUS(t, stop, start)
-			LINT tc = t.count();
-			if ((tc % stoi(SUpdate) == 0) || Elements[0].n == 0)
-			{
-				thread dout(outputData, longboi, tries, n, i, particles/tries*60, Elements, *(&Elements + 1) - Elements, start);
-				if (Elements[1].n > 0)
-					dout.detach();
-				else
-					dout.join();
-			}
 		}
+
 	}
+	finished = true;
+	d.join();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

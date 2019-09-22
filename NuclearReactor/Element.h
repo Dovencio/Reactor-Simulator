@@ -5,7 +5,7 @@
 class Element
 {
 public:
-	Element(unsigned short p, unsigned short n, std::string name, int dName, LINT decChance, LINT tDecChance);
+	Element(unsigned short p, unsigned short n, std::string name, int dName, BF100 time, bool stable);
 	bool testDecay(Element Elements[]);
 	unsigned short Protons;
 	unsigned short Nutrons;
