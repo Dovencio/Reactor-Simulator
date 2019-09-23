@@ -103,8 +103,9 @@ Element Elements[] = {
 	Element::Element(82, 130, "PB210", 14, toSeconds(22.2, "y"), false),//13
 	Element::Element(82, 129, "PB209", 15, toSeconds(3.2528, "h"), false),//14
 	Element::Element(82, 128, "PB208", 15, 0, true),//15
-	Element::Element(92, 143, "U235", 3, pow(10, 9), false)//16
-	//Element::Element(92, 142, "U234", 18, ),//17
+	Element::Element(92, 143, "U235", 3, toSeconds(7.03 * pow(10, 8), "y"), false),//16
+	Element::Element(92, 142, "U234", 18, toSeconds(2.455 * pow(10, 5), "y"), false),//17
+	Element::Element(90, 140, "TH230", 6, toSeconds(7.539 * pow(10, 4), "y"), false)//18
 };
 
 const short EleLeng = *(&Elements + 1) - Elements;
@@ -120,7 +121,7 @@ void displayElementDecayChances(Element Elements[], short len)
 
 void collectElementN(Element Elements[], short len)
 {
-	cout << "Grams [1], Mols[2], Atoms [3], or Save[4]: ";
+	cout << "Grams [1], Mols[2], Atoms [3], Save[4], or percentages[5]: ";
 	string choice;
 	cin >> choice;
 	switch (stoi(choice))
@@ -175,6 +176,21 @@ void collectElementN(Element Elements[], short len)
 		foo.close();
 		break;
 	}
+	case 5:
+	{
+		cout << "Total amount of atoms: ";
+		string st;
+		cin >> st;
+		LINT t(st);
+		for (short i = 0; i < len; i++)
+		{
+			string d;
+			cout << "What precentage of " << Elements[i].elementName << "?: ";
+			cin >> d;
+			Elements[i].n = ((BF50(d) / 100.0) * BF50(st)).convert_to<LINT>();
+		}
+		break;
+	}
 	default:
 		for (short i = 0; i < len; i++)
 		{
@@ -210,10 +226,7 @@ LINT getAllAtoms(bool incS)
 	{
 		if (Elements[i].decayChance > 0 || incS)
 		{
-			if (r < Elements[i].n)
-			{
-				r += Elements[i].n;
-			}
+			r += Elements[i].n;
 		}
 	}
 	return r;

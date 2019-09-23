@@ -10,7 +10,7 @@ int main()
 	_mkdir("saves");
 	srand(clock());
 	system("title Decay simulator");
-	//displayElementDecayChances(Elements, EleLeng);
+	displayElementDecayChances(Elements, EleLeng);
 	collectElementN(Elements, EleLeng);
 	cout << "Update screen every ms?:";
 	cin >> SUpdate;
