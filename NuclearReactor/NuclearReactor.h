@@ -32,19 +32,24 @@ using namespace std;
 
 mutex ThreadLock;
 
+bool Locked = true;
 const LINT mol("6022140761000000000000000");
 STMP start;
-const short longboi = 21;
 LINT particles = 0;
 unsigned long long tries = 0;
 LINT ni = 0;
 LINT in = 0;
 bool finished = false;
 string SUpdate;
+bool recording = false;
 
 void secToYDHMS(BF50 x, BF50 foo[])
 {
 	short i = 0;
+	for (short i = 0; i < 5; i++)
+	{
+		foo[i] = 0;
+	}
 	for (BF50 denom : {
 		BF50("31557600"), BF50("86400"), BF50("3600"),
 		BF50("60"), BF50("1")
@@ -296,13 +301,15 @@ void dataChange(short l, short xStart, int y, BF50 newData)
 	cout << newData << endl;
 }
 
+const short longboi = 16;
+
 void intOutputData(Element Elements[], int len)
 {
-	cout << "Ionizing Radiation:" << endl;
+	cout << "CPM:" << endl;
 	cout << "Time taken:" << endl;
-	cout << "Sim. seconds passed:" << endl;
+	cout << "Simulated time:" << endl;
 	cout << "Ops per sec:" << endl;
-	cout << "ETA (for this sec):" << endl;
+	cout << "ETA (this sec):" << endl;
 	for (short i = 0; i < len; i++)
 	{
 		cout << Elements[i].elementName << ":" << endl;
@@ -317,9 +324,26 @@ void outputData()
 		GETTP(stop)
 		GETUS(t, stop, start)
 		LINT tc = t.count();
+		if (GetAsyncKeyState(VK_ESCAPE) && Locked)
+		{
+			Locked = false;
+			dataChange(longboi, 0, 4, "Exiting in:");
+		}
+		if (GetAsyncKeyState(0x52) && !recording)
+		{
+			recording = true;
+			fstream rec("saves/rec.srec", fstream::out);
+			rec << "Second" << '\t' << "CPM" << '\t';
+			for (short i = 0; i < EleLeng; i++)
+			{
+				rec << Elements[i].elementName << '\t';
+			}
+			rec << endl;
+			rec.close();
+		}
 		if (tc % LINT(SUpdate) == 0)
 		{
-			dataChange(24, longboi, 0, (particles.convert_to<BF50>() / BF50(tries) * BF50(60)).convert_to<LINT>().convert_to<string>() + " CPM");
+			dataChange(24, longboi, 0, particles.convert_to<BF50>() / BF50(tries) * BF50(60));
 			BF50 nii[5] = { 0,0,0,0,0 };
 			secToYDHMS(tc.convert_to<BF50>() / 1000.0, nii);
 			dataChange(45, longboi, 1,
@@ -329,19 +353,24 @@ void outputData()
 				nii[3].convert_to<string>() + " m " +
 				nii[4].convert_to<string>() + " s"
 			);
-
-			dataChange(to_string(ULONG_MAX).length(), longboi, 2, to_string(tries));
+			secToYDHMS(tries, nii);
+			dataChange(to_string(ULONG_MAX).length(), longboi, 2, 
+				nii[0].convert_to<string>() + " y " +
+				nii[1].convert_to<string>() + " d " +
+				nii[2].convert_to<string>() + " h " +
+				nii[3].convert_to<string>() + " m " +
+				nii[4].convert_to<string>() + " s " 
+			);
 			BF50 d = ni.convert_to<BF50>() / (tc.convert_to<BF50>() / 1000.0);
 			dataChange(11, longboi, 3, d);
 			BF50 x = (in - ni).convert_to<BF50>() / d;
-			BF50 foo[5] = { 0,0,0,0,0 };
-			secToYDHMS(x, foo);
+			secToYDHMS(x, nii);
 			dataChange(45, longboi, 4,
-				foo[0].convert_to<string>() + " y " +
-				foo[1].convert_to<string>() + " d " +
-				foo[2].convert_to<string>() + " h " +
-				foo[3].convert_to<string>() + " m " +
-				foo[4].convert_to<string>() + " s " +
+				nii[0].convert_to<string>() + " y " +
+				nii[1].convert_to<string>() + " d " +
+				nii[2].convert_to<string>() + " h " +
+				nii[3].convert_to<string>() + " m " +
+				nii[4].convert_to<string>() + " s " +
 				to_string((BF50(ni) / BF50(in) * BF50(100)).convert_to<float>()) + "%"
 			);
 			for (short i = 0; i < EleLeng; i++)

@@ -37,3 +37,8 @@ x64
 Debug
 Release
 saves
+*.props
+*.vcxproj
+*.filters
+*.user
+enc_temp_folder

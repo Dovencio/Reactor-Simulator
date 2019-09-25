@@ -19,7 +19,6 @@ int main()
 	LINT NumOfTests = 0;
 	start = NOW;
 	thread d(outputData);
-	bool Locked = true;
 	while (getMostAtoms(false) > LINT(0) && Locked)
 	{
 		for (short i = 0; i < *(&Elements + 1) - Elements; i++)
@@ -36,12 +35,24 @@ int main()
 				if (Elements[i].testDecay(Elements))
 				{
 					particles++;
+					//PlaySound(TEXT("click.wav"), NULL, SND_FILENAME);
 				}
 			}
 		}
-		if (GetAsyncKeyState(VK_ESCAPE))
+		if (recording)
 		{
-			Locked = false;
+			fstream rec("saves/rec.srec", fstream::out|fstream::app);
+			rec << tries << '\t' << particles.convert_to<BF50>() / BF50(tries) * BF50(60) << '\t';
+			for (short i = 0; i < EleLeng; i++)
+			{
+				rec << Elements[i].n;
+				if (!(i == EleLeng - 1))
+				{
+					rec << '\t';
+				}
+			}
+			rec << endl;
+			rec.close();
 		}
 	}
 	finished = true;
@@ -62,6 +73,7 @@ int main()
 		}
 		save.close();
 	}
+	return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
